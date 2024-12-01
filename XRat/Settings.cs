@@ -18,7 +18,9 @@ namespace XRat
 
         public static string browserPath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
 
-        public static string banner = "https://cdn.discordapp.com/attachments/1312175786861527116/1312470743358898206/standard.gif?ex=674c9d21&is=674b4ba1&hm=275299b820aa1b8ddc2ad5a798e49b45824d686ff7238135f7231657f21a6723&";
+        public static bool enable_startup = ENABLE_STARTUP;
+
+        public static string banner = "[᲼](https://cdn.discordapp.com/attachments/1312175786861527116/1312470743358898206/standard.gif?ex=674c9d21&is=674b4ba1&hm=275299b820aa1b8ddc2ad5a798e49b45824d686ff7238135f7231657f21a6723&)";
 
         public static string Base64Encode(string plainText)
         {
