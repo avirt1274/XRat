@@ -12,7 +12,8 @@ namespace XRat
         public static ulong guildId = 999999999999999;
         public static ulong logsChannelID = 199999999999991;
 
-        public static bool debug = false; // Disable this before build release (Recomended)
+
+        public static bool debug = true; // Disable this before build release (Recomended)
 
         public static string startLog = "@everyone | XRat By @.avirt";
 

