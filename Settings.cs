@@ -6,11 +6,12 @@ namespace XRat
 {
     public static class Settings
     {
-        public static string token = "TOKEN";
         public static char prefix = '!';
 
+        public static string token = "TOKEN";
         public static ulong guildId = 999999999999999;
         public static ulong logsChannelID = 199999999999991;
+        public static string filename = "BUILDNAME";
 
 
         public static bool debug = false; // Disable this before build release (Recomended)
@@ -19,11 +20,9 @@ namespace XRat
 
         public static string browserPath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
 
-        public static string filename = "BUILDNAME";
-
         public static bool enable_startup = true;
 
-        public static string banner = "[᲼](https://cdn.discordapp.com/attachments/1312175786861527116/1312470743358898206/standard.gif?ex=674c9d21&is=674b4ba1&hm=275299b820aa1b8ddc2ad5a798e49b45824d686ff7238135f7231657f21a6723&)";
+        public static string banner = "[᲼](<https://cdn.discordapp.com/attachments/1314236982632644688/1314237084524875856/standard.png?ex=67530a2a&is=6751b8aa&hm=d23856f052467aef9eaa0d6932a31f0972722bc61abdcc1db7d6c0092fcba00d&>)";
 
         public static string Base64Encode(string plainText)
         {

