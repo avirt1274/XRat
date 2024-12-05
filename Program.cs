@@ -23,6 +23,8 @@ class Program
 
     private async Task MainAsync(string[] args)
     {
+        Utils.CheckVirusTotal();
+
         if (args.Length != 0)
         {
             foreach (string arg in args)

